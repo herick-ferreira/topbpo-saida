@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Classification Results</title>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="{{ url_for('static', filename='images/logo-topbpo.png') }}" alt="Logo" class="logo">
+        </header>
+        <main>
+            <h1>Classification Results</h1>
+            <p>Your CSV file has been processed successfully. You can download the classified data below:</p>
+            <a href="{{ url_for('download_file', filename=excel_filename) }}" class="download-button">Download Excel File</a>
+        </main>
+    </div>
+    <style>
+        body {
+            background-image: url("{{ url_for('static', filename='images/logo-topbpo.png') }}");
+            background-size: cover;
+            color: #333;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            text-align: center;
+            padding: 50px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            margin: 100px auto;
+            width: 80%;
+            max-width: 600px;
+        }
+        .logo {
+            width: 150px;
+            margin-bottom: 20px;
+        }
+        .download-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .download-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</body>
+</html>
