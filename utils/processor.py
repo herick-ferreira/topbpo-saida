@@ -232,6 +232,18 @@ def process_files(arquivo_xlsx, arquivo_pdf, parametros_xlsx, nome_cliente, mes_
         df_receitas_aluguel.columns = list_new_columns
 
         df_receitas_aluguel['Desconto'] = df_receitas_aluguel['Desconto'].fillna(0)
+
+        # Ajustar Descontos repetidos
+        df_receitas_aluguel['Desconto'] = [desc / len(df_receitas_aluguel[ 
+                                                                (df_receitas_aluguel.Cliente == cliente) & 
+                                                                (df_receitas_aluguel.Local == local) &
+                                                                (df_receitas_aluguel['Produto/Serviço'] == prod) 
+                                                    ])
+                                
+                                for cliente, local, prod, desc in df_receitas_aluguel[['Cliente', 'Local', 'Produto/Serviço', 'Desconto']].values ]
+
+
+
         df_receitas_aluguel['Valor'] = df_receitas_aluguel['Valor'].fillna(0)
         
         df_receitas_aluguel['Saldo'] = [x - y if y > 0 else x + y for x, y in zip( df_receitas_aluguel['Valor'], df_receitas_aluguel['Desconto'] )]
