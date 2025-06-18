@@ -166,7 +166,7 @@ def process_files(arquivo_xlsx, arquivo_pdf, parametros_xlsx, nome_cliente, mes_
                                 
                                 df_pdf.loc[len(df_pdf), df_pdf.columns] = [locatario, code]
         
-        df_pdf = df_pdf.drop_duplicates()
+        df_pdf = df_pdf.drop_duplicates(subset=["code_imovel"], keep='last')
         df_pdf['code_imovel'] = df_pdf['code_imovel'].apply(str)
         df_pdf['Auxiliar_Vago'] = ["sim" if v.lower().strip() == "vago" else "não" for v in df_pdf.locatario]
         df_pdf.sort_values(by='locatario')
