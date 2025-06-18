@@ -119,7 +119,7 @@ def process_files(arquivo_xlsx, arquivo_pdf, parametros_xlsx, nome_cliente, mes_
 
         df_base['Data'] = ['0' + str(d) + '/' + mes_ano if len(str(d)) == 1 else str(d) + '/' +  mes_ano for d in df_base['DIA']]
         df_base['Complemento_Descricao'] = [" ".join([des.strip(), ch.strip(), ref.strip()]) for des, ch, ref in df_base[['DESCRIÇÃO', 'COMPLEMENTO HISTÓRICO', 'REFERÊNCIA']].values]
-        df_base['VALOR RECEBIDO'] = ["-" + str(v).strip() if  ("dev." in desc.strip().lower() or "desc. aluguel" in desc.strip().lower()) 
+        df_base['VALOR RECEBIDO'] = ["-" + str(v).strip() if  ("dev." in desc.strip().lower() or "desc. aluguel" in desc.strip().lower()) and not '-' in str(v).strip()
                                     and str(desc).strip().lower() not in ['', 'nan'] else str(v).strip() for v, desc in df_base[['VALOR RECEBIDO', 'DESCRIÇÃO']].values]
         
         df_base['VALOR PAGO'] = [str(v).strip() for v in df_base['VALOR PAGO']]
