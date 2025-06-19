@@ -259,7 +259,7 @@ def process_files(arquivo_xlsx, arquivo_pdf, parametros_xlsx, nome_cliente, mes_
 
         # Processar despesas
         df_despesas = df_base[df_base['TIPO DE LANÇAMENTO'].str.strip().str.lower() == "despesas"]
-
+        len_initial_despesas = len(df_despesas)
         df_despesas['Beneficiário'] = 'Adibras Administradora Brasileira de bens LTDA'
         df_despesas['Conta'] = 'Caixa e equivalentes-caixa:Adibras'
         df_despesas['Auxiliar_Valor'] = [rec.replace('-', '') if "-" in rec else pago for rec, pago in df_despesas[['VALOR RECEBIDO', 'VALOR PAGO']].values]
@@ -274,6 +274,7 @@ def process_files(arquivo_xlsx, arquivo_pdf, parametros_xlsx, nome_cliente, mes_
 
         # Processar lançamentos contábeis
         df_contabil = df_base[df_base['TIPO DE LANÇAMENTO'].str.strip().str.lower() == "lançamentos contábeis"]
+        len_initial_contabil = len(df_contabil)
 
         diario_n = diario_n - 1
         date_increment = pd.to_datetime('01/01/2023', format='%d/%m/%Y')
@@ -385,6 +386,13 @@ def process_files(arquivo_xlsx, arquivo_pdf, parametros_xlsx, nome_cliente, mes_
         ws['B14'] = '=B12-B6'
 
         wb.save(output_path)
+        
+        if len(df_contabil) != len_initial_contabil:
+            logging.error(f"Alerta: O número de lançamentos contabeis processadas ({len(df_contabil)}) é diferente do número inicial ({len_initial_contabil}). Verifique os dados.")
+            raise ProcessingError("Número de lançamentos contabeis processadas é diferente do número inicial. Verifique os dados.")
+        elif len(df_despesas) != len_initial_despesas:
+            logging.error(f"Alerta: O número de despesas processadas ({len(df_despesas)}) é diferente do número inicial ({len_initial_despesas}). Verifique os dados.")
+            raise ProcessingError("Número de despesas processadas é diferente do número inicial. Verifique os dados.")
 
         return output_path
 
