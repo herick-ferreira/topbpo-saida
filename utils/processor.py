@@ -110,6 +110,7 @@ def process_files(arquivo_xlsx, arquivo_pdf, parametros_xlsx, nome_cliente, mes_
         # Carregar dados
         df_list = pd.read_excel(parametros_xlsx, sheet_name="Listas", keep_default_na=False, engine='openpyxl')
         df_base = pd.read_excel(arquivo_xlsx, converters={'str':['DIA', 'LOCADOR', 'IMÓVEL', 'LOCADOR','REFERÊNCIA','DESCRIÇÃO', 'COMPLEMENTO HISTÓRICO','LOCATÁRIO']}, engine='openpyxl', keep_default_na=False, sheet_name=[0])[0]
+        len_initial = len(df_base)
         initial_columns = df_base.columns
 
         # Limpar dados
@@ -385,6 +386,12 @@ def process_files(arquivo_xlsx, arquivo_pdf, parametros_xlsx, nome_cliente, mes_
         ws['B14'] = '=B12-B6'
 
         wb.save(output_path)
+        
+        len_end = sum([len(df) for df in list_dfs])
+        
+        if len_end != len_initial:
+            logging.error(f"Alerta: O número de linhas no arquivo de saída ({len_end}) é diferente do arquivo original ({len_initial}). Verifique se houve perda de dados.")
+            raise ProcessingError(f"O número de linhas no arquivo de saída ({len_end}) é diferente do arquivo original ({len_initial}). Verifique se houve perda de dados.")
 
         return output_path
 
