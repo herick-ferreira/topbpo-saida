@@ -1,0 +1,41 @@
+# Arquivos desnecessários para deploy
+catalyst-config.json
+main.py
+README.md
+Dockerfile
+passenger_wsgi.py
+render.yaml
+
+# Dependências locais (não enviar)
+flask/
+pandas/
+openpyxl/
+zcatalyst_sdk/
+*.egg-info/
+
+# Cache e compilados
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ambiente local
+.env
+.venv/
+venv/
+env/
+
+# OS e IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs e temporários
+*.log
+*.tmp
+.pytest_cache/
+
+# Arquivos de teste
+test_*
+*_test.py

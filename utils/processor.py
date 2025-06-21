@@ -216,15 +216,15 @@ def process_files(arquivo_xlsx, arquivo_pdf, parametros_xlsx, nome_cliente, mes_
         df_receitas_aluguel['VALOR RECEBIDO'] = [float(v.strip().replace(',', '.')) if v.strip() != '' else 0 for v in df_receitas_aluguel['VALOR RECEBIDO'] ]
 
         df_despesas_aluguel = df_receitas_aluguel[df_receitas_aluguel.DESCRIÇÃO.str.strip().str.lower() == "desc. aluguel"]
-        df_receitas_aluguel['Auxiliar'] = [1 if v.strip().lower() in (["aluguel", "desc. aluguel"]) else 0 for v in df_receitas_aluguel['DESCRIÇÃO']]
+        df_despesas_aluguel['Auxiliar'] = "1"
         df_receitas_aluguel = df_receitas_aluguel[df_receitas_aluguel.DESCRIÇÃO.str.strip().str.lower() != "desc. aluguel"]
-
+        df_receitas_aluguel['Auxiliar'] = ["1" if desc.strip().lower() == "aluguel" else "2" for desc in df_receitas_aluguel['DESCRIÇÃO'] ]
+        
         df_despesas_aluguel['VALOR RECEBIDO'] = [v*-1 if v < 0 else v for v in df_despesas_aluguel['VALOR RECEBIDO']]
-        df_despesas_aluguel = df_despesas_aluguel.groupby(["ENDEREÇO DO IMÓVEL", "locatario"], as_index=False).agg({'VALOR RECEBIDO': 'sum'})
-        df_despesas_aluguel["Auxiliar"] = 1
-
-        df_receitas_aluguel = df_receitas_aluguel.merge(df_despesas_aluguel, how="left", on=["ENDEREÇO DO IMÓVEL", "locatario", "Auxiliar"])
-
+        df_despesas_aluguel = df_despesas_aluguel.groupby(["ENDEREÇO DO IMÓVEL", "locatario", "REFERÊNCIA", "Auxiliar"], as_index=False).agg({'VALOR RECEBIDO': 'sum'})
+        
+        df_receitas_aluguel = df_receitas_aluguel.merge(df_despesas_aluguel, how="left", on=["ENDEREÇO DO IMÓVEL", "locatario", "REFERÊNCIA", "Auxiliar"])
+        
         list_columns = [ "locatario", "Data", "Conta", "DESCRIÇÃO", "Complemento_Descricao", "VALOR RECEBIDO_x", 'VALOR RECEBIDO_y', "ENDEREÇO DO IMÓVEL" ]
         list_new_columns = ["Cliente", "Data do recibo de venda", "Conta", "Produto/Serviço", "Descrição", "Valor", "Desconto", "Local"]
 
@@ -232,18 +232,6 @@ def process_files(arquivo_xlsx, arquivo_pdf, parametros_xlsx, nome_cliente, mes_
         df_receitas_aluguel.columns = list_new_columns
 
         df_receitas_aluguel['Desconto'] = df_receitas_aluguel['Desconto'].fillna(0)
-
-        # Ajustar Descontos repetidos
-        df_receitas_aluguel['Desconto'] = [desc / len(df_receitas_aluguel[ 
-                                                                (df_receitas_aluguel.Cliente == cliente) & 
-                                                                (df_receitas_aluguel.Local == local) &
-                                                                (df_receitas_aluguel['Produto/Serviço'] == prod) 
-                                                    ])
-                                
-                                for cliente, local, prod, desc in df_receitas_aluguel[['Cliente', 'Local', 'Produto/Serviço', 'Desconto']].values ]
-
-
-
         df_receitas_aluguel['Valor'] = df_receitas_aluguel['Valor'].fillna(0)
         
         df_receitas_aluguel['Saldo'] = [x - y if y > 0 else x + y for x, y in zip( df_receitas_aluguel['Valor'], df_receitas_aluguel['Desconto'] )]
