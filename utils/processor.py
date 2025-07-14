@@ -359,7 +359,7 @@ def process_files(arquivo_xlsx, arquivo_pdf, parametros_xlsx, nome_cliente, mes_
         ws['B5'] = f'={transferencia}'
         ws['C5'] = f'={pagamentos}'
         ws['A6'] = 'Saldo Planilha'
-        ws['B6'] = '=B1-B2+D4-B5'
+        ws['B6'] = '=B1-B2+D4-B5-C5'
         ws['A8'] = 'Extratos adibras'
         ws['A9'] = 'Si'
         ws['B9'] = saldo_inicial
