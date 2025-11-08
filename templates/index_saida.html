@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processador de Arquivos TopBPO</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            background-image: url('{{ url_for('static', filename='images/logo-topbpo.png') }}');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        .logo {
+            width: 200px;
+            margin: 0 auto 30px;
+            display: block;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #00BFFF;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #00BFFF;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        input[type="file"], input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #00BFFF;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+        
+        input[type="file"]:focus, input[type="text"]:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #0099CC;
+            box-shadow: 0 0 10px rgba(0, 191, 255, 0.3);
+        }
+        
+        .file-requirements {
+            font-size: 0.9em;
+            color: #FFD700;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 1.2em;
+            background: linear-gradient(45deg, #00BFFF, #0099CC);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        
+        button:hover {
+            background: linear-gradient(45deg, #0099CC, #006699);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 191, 255, 0.4);
+        }
+        
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .alert-error {
+            background-color: rgba(220, 53, 69, 0.9);
+            border: 1px solid #dc3545;
+            color: white;
+        }
+        
+        .alert-success {
+            background-color: rgba(40, 167, 69, 0.9);
+            border: 1px solid #28a745;
+            color: white;
+        }
+        
+        .loading {
+            text-align: center;
+            display: none;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #00BFFF;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .instructions {
+            background-color: rgba(0, 191, 255, 0.1);
+            border: 1px solid #00BFFF;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .instructions h3 {
+            color: #00BFFF;
+            margin-top: 0;
+        }
+        
+        .instructions ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="{{ url_for('static', filename='images/logo-topbpo.png') }}" alt="Logo TopBPO" class="logo">
+        <h1>Processador de Arquivos TopBPO</h1>
+        
+        <div class="instructions">
+            <h3>📋 Instruções de Uso</h3>
+            <ul>
+                <li><strong>Arquivo Excel (Dados):</strong> Arquivo .xlsx com os dados classificados contendo as colunas: DIA, LOCADOR, IMÓVEL, REFERÊNCIA, DESCRIÇÃO, etc.</li>
+                <li><strong>Arquivo PDF:</strong> Arquivo .pdf com informações dos locatários</li>
+                <li><strong>Arquivo de Parâmetros:</strong> Arquivo .xlsx com as abas "Listas" e "Parametrização" contendo configurações</li>
+                <li><strong>Dados Financeiros:</strong> Preencha todos os campos com valores numéricos válidos</li>
+            </ul>
+        </div>
+        
+        <div id="alert" class="alert"></div>
+        
+        <form id="uploadForm" action="/upload-saida" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="arquivo_xlsx">📊 Arquivo Excel (Dados Classificados):</label>
+                <input type="file" id="arquivo_xlsx" name="arquivo_xlsx" accept=".xlsx" required>
+                <div class="file-requirements">Arquivo .xlsx com dados classificados</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="arquivo_pdf">📄 Arquivo PDF (Locatários):</label>
+                <input type="file" id="arquivo_pdf" name="arquivo_pdf" accept=".pdf" required>
+                <div class="file-requirements">Arquivo .pdf com informações dos locatários</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="parametros_xlsx">⚙️ Arquivo de Parâmetros:</label>
+                <input type="file" id="parametros_xlsx" name="parametros_xlsx" accept=".xlsx" required>
+                <div class="file-requirements">Arquivo .xlsx com abas "Listas" e "Parametrização"</div>
+            </div>
+              <div class="form-group">
+                <label for="nome_cliente">👤 Nome do Cliente:</label>
+                <input type="text" id="nome_cliente" name="nome_cliente" placeholder="Digite o nome do cliente" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="mes_ano">📅 Mês e Ano (formato: 01/2025):</label>
+                <input type="text" id="mes_ano" name="mes_ano" placeholder="01/2025" pattern="[0-9]{2}/[0-9]{4}" required>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="transferencia">💸 Transferências:</label>
+                    <input type="text" id="transferencia" name="transferencia" placeholder="0,00" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="pagamentos">💳 Pagamentos:</label>
+                    <input type="text" id="pagamentos" name="pagamentos" placeholder="0,00" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="saldo_inicial">💰 Saldo Inicial:</label>
+                    <input type="text" id="saldo_inicial" name="saldo_inicial" placeholder="0,00" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="saldo_final">💵 Saldo Final:</label>
+                    <input type="text" id="saldo_final" name="saldo_final" placeholder="0,00" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="diario_n">📋 Diário Nº (Lançamentos Contábeis):</label>
+                <input type="number" id="diario_n" name="diario_n" min="1" required>
+            </div>
+            
+            <button type="submit" id="submitBtn">🚀 Processar Arquivos</button>
+        </form>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Processando arquivos... Por favor, aguarde.</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const form = this;
+            const formData = new FormData(form);
+            const submitBtn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+            const alert = document.getElementById('alert');
+              // Validar formato da data
+            const mesAno = document.getElementById('mes_ano').value;
+            const datePattern = /^(0[1-9]|1[0-2])\/\d{4}$/;
+            if (!datePattern.test(mesAno)) {
+                showAlert('Formato de data inválido. Use o formato: 01/2025', 'error');
+                return;
+            }
+            
+            // Validar nome do cliente
+            const nomeCliente = document.getElementById('nome_cliente').value.trim();
+            if (!nomeCliente) {
+                showAlert('Por favor, digite o nome do cliente.', 'error');
+                return;
+            }
+            
+            // Validar arquivos
+            const requiredFiles = ['arquivo_xlsx', 'arquivo_pdf', 'parametros_xlsx'];
+            for (let fileField of requiredFiles) {
+                const file = document.getElementById(fileField).files[0];
+                if (!file) {
+                    showAlert(`Por favor, selecione o arquivo ${fileField.replace('_', ' ')}.`, 'error');
+                    return;
+                }
+            }
+            
+            // Validar valores numéricos
+            const numericFields = ['transferencia', 'pagamentos', 'saldo_inicial', 'saldo_final'];
+            for (let field of numericFields) {
+                const value = document.getElementById(field).value;
+                if (!value || !isValidNumeric(value)) {
+                    showAlert(`Valor inválido para ${field.replace('_', ' ')}. Use formato: 1000,50 ou 1000.50`, 'error');
+                    return;
+                }
+            }
+            
+            // Mostrar loading
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processando...';
+            loading.style.display = 'block';
+            alert.style.display = 'none';
+            
+            // Enviar requisição
+            fetch('/upload-saida', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.blob().then(blob => {                        // Download do arquivo
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        const nomeCliente = document.getElementById('nome_cliente').value.trim().replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
+                        a.download = `Saida_Matriz_${nomeCliente}_${mesAno.replace('/', '_')}.xlsx`;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                        
+                        showAlert('Arquivo processado com sucesso!', 'success');
+                    });
+                } else {
+                    return response.json().then(data => {
+                        throw new Error(data.error || 'Erro desconhecido');
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert(error.message || 'Erro ao processar arquivo. Tente novamente.', 'error');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🚀 Processar Arquivos';
+                loading.style.display = 'none';
+            });
+        });
+        
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alert.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    alert.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        function isValidNumeric(value) {
+            if (!value || !value.trim()) return false;
+            const cleaned = value.trim().replace(',', '.').replace(/\./g, '').replace('-', '');
+            return /^\d+$/.test(cleaned);
+        }
+          // Máscara para valores monetários
+        const monetaryFields = ['transferencia', 'pagamentos', 'saldo_inicial', 'saldo_final'];
+        monetaryFields.forEach(fieldId => {
+            document.getElementById(fieldId).addEventListener('input', function(e) {
+                let value = e.target.value.replace(/[^\d,-]/g, '');
+                e.target.value = value;
+            });
+        });
+        
+        // Máscara para nome do cliente (permitir apenas letras, números e espaços)
+        document.getElementById('nome_cliente').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^a-zA-Z0-9\s]/g, '');
+            e.target.value = value;
+        });
+        
+        // Máscara para data
+        document.getElementById('mes_ano').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 6);
+            }
+            e.target.value = value;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Classifier</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <img src="{{ url_for('static', filename='images/logo-topbpo.png') }}" alt="Logo" class="logo">
+        <h1>Upload seu extrato csv para classificação</h1>
+        <form action="/upload-classifier" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" accept=".csv" required>
+            <button type="submit">Classificar</button>
+        </form>
+    </div>
+    <style>
+        body {
+            background-image: url('{{ url_for('static', filename='images/logo-topbpo.png') }}');
+            background-size: cover;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            text-align: center;
+            margin-top: 100px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .logo {
+            width: 150px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: aqua;
+            cursor: pointer;
+            hover {
+                background-color: rgb(3, 69, 71);
+                color: white;
+            }
+        }
+    </style>
+</body>
+</html>
